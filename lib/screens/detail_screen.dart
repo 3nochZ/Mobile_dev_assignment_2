@@ -43,6 +43,11 @@ class _DetailScreenState extends State<DetailScreen> {
             String message = 'An unexpected error occurred';
             if (error is ApiException) {
               message = error.message;
+              if (error.statusCode != null) {
+                message += ' (Status: ${error.statusCode})';
+              }
+            } else {
+              message = 'An unexpected error occurred: ${error.toString()}';
             }
             return Center(
               child: Padding(

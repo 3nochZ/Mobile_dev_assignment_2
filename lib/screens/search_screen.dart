@@ -58,9 +58,18 @@ class _SearchScreenState extends State<SearchScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String message = 'An unexpected error occurred';
+        if (e is ApiException) {
+          message = e.message;
+          if (e.statusCode != null) {
+            message += ' (Status: ${e.statusCode})';
+          }
+        } else {
+          message = 'An unexpected error occurred: ${e.toString()}';
+        }
         setState(() {
           _isLoading = false;
-          _errorMessage = e is ApiException ? e.message : 'An unexpected error occurred';
+          _errorMessage = message;
         });
       }
     }
