@@ -1,8 +1,8 @@
 # Country Explorer App
 
 ## Student Information
-- **Name:** [Your Name]
-- **Student ID:** [Your Student ID]
+- **Name:** [PLEASE FILL YOUR NAME]
+- **Student ID:** [PLEASE FILL YOUR ID]
 
 ## Track Chosen
 - **Track A:** Country Explorer App (API: RestCountries)
@@ -15,6 +15,11 @@ Country Explorer is a Flutter application that allows users to browse, search, a
 - Robust error handling for network issues, timeouts, and API errors.
 - Retry mechanism for all data fetching operations.
 
+## Bonus Tasks Implemented
+- **Search Debouncing (+5 marks):** Implemented a 400ms debounce timer in the search screen to optimize API calls.
+- **Local Caching (+5 marks):** Implemented an in-memory cache in the service layer with a 5-minute TTL and background refreshing. A "Cached" badge appears when data is served from cache.
+- **Pagination (+5 marks):** Implemented client-side infinite scroll pagination (20 items per page) in the main list.
+
 ## Setup Instructions
 1.  **Prerequisites:**
     - Flutter SDK installed (3.0.0 or higher recommended).
@@ -22,7 +27,7 @@ Country Explorer is a Flutter application that allows users to browse, search, a
 2.  **Clone the repository:**
     ```bash
     git clone [repository-url]
-    cd country_explorer
+    cd Mobile_dev_assignment_2
     ```
 3.  **Install dependencies:**
     ```bash
@@ -59,3 +64,4 @@ lib/
     ├── search_screen.dart
     └── detail_screen.dart
 ```
+

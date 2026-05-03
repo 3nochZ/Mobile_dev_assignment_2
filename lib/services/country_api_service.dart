@@ -5,6 +5,16 @@ import 'package:http/http.dart' as http;
 import '../models/country.dart';
 import 'api_exception.dart';
 
+class CacheEntry<T> {
+  final T data;
+  final DateTime timestamp;
+
+  CacheEntry(this.data) : timestamp = DateTime.now();
+
+  bool get isExpired =>
+      DateTime.now().difference(timestamp) > const Duration(minutes: 5);
+}
+
 class CountryApiService {
   final String _baseUrl = 'restcountries.com';
   final Duration _timeout = const Duration(seconds: 10);
@@ -13,7 +23,24 @@ class CountryApiService {
     'Accept': 'application/json',
   };
 
+  // Cache for all countries
+  CacheEntry<List<Country>>? _allCountriesCache;
+  // Cache for search results
+  final Map<String, CacheEntry<List<Country>>> _searchCache = {};
+
+  bool isDataFromCache = false;
+
   Future<List<Country>> fetchAllCountries() async {
+    isDataFromCache = false;
+
+    // Check cache
+    if (_allCountriesCache != null && !_allCountriesCache!.isExpired) {
+      isDataFromCache = true;
+      // Refresh in background as per bonus requirement "refreshing in the background"
+      _refreshAllCountriesInBackground();
+      return _allCountriesCache!.data;
+    }
+
     final uri = Uri.https(_baseUrl, '/v3.1/all', {
       'fields': 'name,flag,region,capital,population,currencies,languages,area,timezones,cca3',
     });
@@ -26,11 +53,43 @@ class CountryApiService {
       _checkResponse(response);
       
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Country.fromJson(json)).toList();
+      final countries = data.map((json) => Country.fromJson(json)).toList();
+      
+      // Update cache
+      _allCountriesCache = CacheEntry(countries);
+      
+      return countries;
     });
   }
 
+  void _refreshAllCountriesInBackground() async {
+    try {
+      final uri = Uri.https(_baseUrl, '/v3.1/all', {
+        'fields': 'name,flag,region,capital,population,currencies,languages,area,timezones,cca3',
+      });
+      final response = await http
+          .get(uri, headers: _headers)
+          .timeout(_timeout);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        final countries = data.map((json) => Country.fromJson(json)).toList();
+        _allCountriesCache = CacheEntry(countries);
+      }
+    } catch (_) {
+      // Background refresh failed, keep existing cache
+    }
+  }
+
   Future<List<Country>> searchByName(String name) async {
+    isDataFromCache = false;
+    final searchKey = name.toLowerCase();
+
+    // Check cache
+    if (_searchCache.containsKey(searchKey) && !_searchCache[searchKey]!.isExpired) {
+      isDataFromCache = true;
+      return _searchCache[searchKey]!.data;
+    }
+
     final uri = Uri.https(_baseUrl, '/v3.1/name/$name');
 
     return _performRequest(() async {
@@ -39,13 +98,18 @@ class CountryApiService {
           .timeout(_timeout);
       
       if (response.statusCode == 404) {
-        return []; // Return empty list if no country found
+        return []; 
       }
 
       _checkResponse(response);
       
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Country.fromJson(json)).toList();
+      final countries = data.map((json) => Country.fromJson(json)).toList();
+
+      // Update cache
+      _searchCache[searchKey] = CacheEntry(countries);
+
+      return countries;
     });
   }
 
