@@ -1,8 +1,8 @@
 # Country Explorer App
 
 ## Student Information
-- **Name:** [PLEASE FILL YOUR NAME]
-- **Student ID:** [PLEASE FILL YOUR ID]
+- **Name:** Henok Zemedkun
+- **Student ID:** ATE/8552/16
 
 ## Track Chosen
 - **Track A:** Country Explorer App (API: RestCountries)
